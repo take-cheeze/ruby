@@ -624,7 +624,13 @@ method_added(VALUE klass, ID mid)
 rb_method_entry_t *
 rb_add_method(VALUE klass, ID mid, rb_method_type_t type, void *opts, rb_method_visibility_t visi)
 {
-    rb_method_entry_t *me = rb_method_entry_make(klass, mid, klass, visi, type, NULL, mid, opts);
+    rb_method_entry_t *me;
+
+    if (rb_method_add_frozen) {
+        rb_raise(rb_eTypeError, "method defining frozen");
+    }
+
+    me = rb_method_entry_make(klass, mid, klass, visi, type, NULL, mid, opts);
 
     if (type != VM_METHOD_TYPE_UNDEF && type != VM_METHOD_TYPE_REFINED) {
 	method_added(klass, mid);
@@ -2082,6 +2088,13 @@ Init_Method(void)
 #endif
 }
 
+int rb_method_add_frozen = FALSE;
+
+static VALUE rb_freeze_method_define(VALUE self) {
+    rb_method_add_frozen = TRUE;
+    return Qnil;
+}
+
 void
 Init_eval_method(void)
 {
@@ -2121,4 +2134,6 @@ Init_eval_method(void)
 	REPLICATE_METHOD(rb_eException, idRespond_to);
 	REPLICATE_METHOD(rb_eException, idRespond_to_missing);
     }
+
+    rb_define_method(rb_mKernel, "freeze_method_define", rb_freeze_method_define, 0);
 }

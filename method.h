@@ -214,4 +214,6 @@ void rb_method_entry_copy(rb_method_entry_t *dst, const rb_method_entry_t *src);
 
 void rb_scope_visibility_set(rb_method_visibility_t);
 
+extern int rb_method_add_frozen;
+
 #endif /* RUBY_METHOD_H */
